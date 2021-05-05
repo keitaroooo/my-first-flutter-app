@@ -22,11 +22,15 @@ class _RandomWordsState extends State<RandomWords> {
   final _suggestions = <WordPair>[];
   final _saved = <WordPair>{};
   final _biggerFont = const TextStyle(fontSize: 18.0);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Startup Name Generator'),
+        actions: [
+          IconButton(icon: Icon(Icons.list), onPressed: _pushSaved),
+        ],
       ),
       body: _buildSuggestions(),
     );
@@ -38,9 +42,8 @@ class _RandomWordsState extends State<RandomWords> {
         // itemBuilderはword pairingが提案されるたびに呼ばれ，各提案はListTile rowに配置される．
         // 偶数行の場合word pairingを追加し，奇数行の場合分割線を追加する
         itemBuilder: (BuildContext _context, int i) {
-          if (i.isOdd) {
-            return Divider();
-          }
+          if (i.isOdd) return Divider();
+
           // 奇数行のときは以下のコードは実行されないため，奇数行のword pairingも使用するために2で割る．
           final int index = i ~/ 2;
           if (index >= _suggestions.length) {
@@ -71,5 +74,37 @@ class _RandomWordsState extends State<RandomWords> {
             }
           });
         });
+  }
+
+  void _pushSaved() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) {
+          final tiles = _saved.map(
+            (WordPair pair) {
+              return ListTile(
+                title: Text(
+                  pair.asPascalCase,
+                  style: _biggerFont,
+                ),
+              );
+            },
+          );
+          final divided = tiles.isNotEmpty
+              ? ListTile.divideTiles(
+                  context: context,
+                  tiles: tiles,
+                ).toList()
+              : <Widget>[];
+
+          return Scaffold(
+            appBar: AppBar(
+              title: Text('Saved Suggestions'),
+            ),
+            body: ListView(children: divided),
+          );
+        },
+      ),
+    );
   }
 }
